@@ -62,13 +62,8 @@ const Favorite: React.FC = () => {
         await deleteFavorite(favoriteId);
         showSnackbar("ลบ favorite สำเร็จ", "error");
 
-        // อัพเดท favoritePropertyIds และ favoriteIdMap
-        setFavoritePropertyIds(
-          favoritePropertyIds.filter((id) => id !== propertyId)
-        );
-        const newMap = new Map(favoriteIdMap);
-        newMap.delete(propertyId);
-        setFavoriteIdMap(newMap);
+        // Reload ข้อมูล users เพื่อดึงข้อมูล favorites ที่อัพเดทแล้ว
+        await fetchData();
       } else {
         // เพิ่ม favorite
         const response = await createFavorite(selectedUserId, propertyId);
@@ -78,13 +73,8 @@ const Favorite: React.FC = () => {
           showSnackbar("เพิ่ม favorite ไม่สำเร็จ", "error");
         }
 
-        // อัพเดท favoritePropertyIds และ favoriteIdMap
-        setFavoritePropertyIds([...favoritePropertyIds, propertyId]);
-        if (response?.id) {
-          const newMap = new Map(favoriteIdMap);
-          newMap.set(propertyId, response.id);
-          setFavoriteIdMap(newMap);
-        }
+        // Reload ข้อมูล users เพื่อดึงข้อมูล favorites ที่อัพเดทแล้ว
+        await fetchData();
       }
     } catch (err: unknown) {
       const error = err as {
@@ -115,6 +105,28 @@ const Favorite: React.FC = () => {
     fetchData();
     fetchProperties();
   }, [fetchData, fetchProperties]);
+
+  // อัพเดท favorite data เมื่อ users เปลี่ยนและมี selectedUserId
+  useEffect(() => {
+    if (selectedUserId) {
+      const user = users.find((user) => user.id === selectedUserId);
+      if (user && user.favorites) {
+        const propertyIds = user.favorites.map(
+          (favorite) => favorite.propertyId
+        );
+        setFavoritePropertyIds(propertyIds);
+
+        const newMap = new Map<number, number>();
+        user.favorites.forEach((favorite) => {
+          newMap.set(favorite.propertyId, favorite.id);
+        });
+        setFavoriteIdMap(newMap);
+      } else {
+        setFavoritePropertyIds([]);
+        setFavoriteIdMap(new Map());
+      }
+    }
+  }, [users, selectedUserId]);
 
   return (
     <Box>

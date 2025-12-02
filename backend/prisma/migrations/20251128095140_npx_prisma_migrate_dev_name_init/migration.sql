@@ -1,12 +1,3 @@
--- Grant privileges to app_user
-GRANT REFERENCES ON *.* TO 'app_user'@'%';
-
-FLUSH PRIVILEGES;
-
-GRANT CREATE, DROP, REFERENCES, INDEX, ALTER, SELECT, INSERT, UPDATE, DELETE ON *.* TO 'app_user'@'%';
-
-FLUSH PRIVILEGES;
-
 -- CreateTable
 CREATE TABLE `User` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,

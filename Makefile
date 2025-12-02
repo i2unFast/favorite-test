@@ -1,4 +1,4 @@
-.PHONY: help install setup start start-all stop restart clean dev-backend dev-frontend db-up db-down db-migrate db-migrate-dev db-seed db-reset check-env
+.PHONY: help install setup start start-all stop restart clean dev-backend dev-frontend db-up db-down db-migrate db-migrate-dev db-seed db-reset check-env db-grant-privileges
 
 # Colors for output
 GREEN  := $(shell tput -Txterm setaf 2)
@@ -45,6 +45,17 @@ db-up: ## เริ่มต้น Docker database container
 	@echo "$(GREEN)✅ Database เริ่มต้นแล้ว$(RESET)"
 	@echo "$(YELLOW)⏳ รอ database พร้อมใช้งาน (10 วินาที)...$(RESET)"
 	@sleep 10
+	@$(MAKE) db-grant-privileges
+
+db-grant-privileges: ## ให้สิทธิ์แก่ app_user (ต้องรันด้วย root)
+	@echo "$(GREEN)🔐 กำลังให้สิทธิ์แก่ app_user...$(RESET)"
+	@if docker ps | grep -q my-mysql; then \
+		docker exec -i my-mysql mysql -uroot -prootpassword < backend/init-grants.sql && \
+		echo "$(GREEN)✅ สิทธิ์ถูกให้แก่ app_user แล้ว$(RESET)" || \
+		echo "$(YELLOW)⚠️  ไม่สามารถให้สิทธิ์ได้ (อาจจะให้สิทธิ์แล้ว)$(RESET)"; \
+	else \
+		echo "$(YELLOW)⚠️  Database container ยังไม่ได้รัน$(RESET)"; \
+	fi
 
 db-down: ## หยุด Docker database container
 	@echo "$(GREEN)🛑 กำลังหยุด database...$(RESET)"

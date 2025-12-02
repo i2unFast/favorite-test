@@ -1,4 +1,4 @@
-version: '3.9'
+version: "3.9"
 services:
   db:
     image: mysql:8
@@ -13,7 +13,6 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./backend/init-grants.sql:/docker-entrypoint-initdb.d/init-grants.sql
-    command: --default-authentication-plugin=mysql_native_password
 
 volumes:
   db_data:
